@@ -291,33 +291,8 @@
     self.latestCommand = command;
     
     weakSelf.picker= [[XMNPhotoPickerController alloc] initWithMaxCount:0 delegate:nil];
-    weakSelf.picker.pickingVideoEnable = NO;
-    //    选择照片后回调
-    [weakSelf.picker setDidFinishPickingPhotosBlock:^(NSArray<UIImage *> * _Nullable images, NSArray<XMNAssetModel *> * _Nullable assets) {
-        [weakSelf.models addObjectsFromArray:assets];
-        //        NSString *s = @"file://";
-        NSString *path = [NSString stringWithFormat:@"%@",[MediaUtils getTempPath]];
-        
-        NSString * PathString;
-        
-        NSDateFormatter *formater = [[NSDateFormatter alloc] init];//用时间给文件全名，以免重复
-        [formater setDateFormat:@"yyyyMMddHHmmss"];
-        
-        for (int i = 0; i < images.count; i++) {
-            UIImage *img = [images objectAtIndex:i];
-            
-            PathString = [path stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_%d.jpg",[formater stringFromDate:[NSDate date]],i]];
-            [UIImageJPEGRepresentation(img,1) writeToFile:PathString atomically:YES];
-            
-            
-            
-            [self.ImgArr addObject:PathString];
-            
-        }
-        [self array:self.ImgArr string:nil];
-        [self dismissController];
-    }];
-    
+    weakSelf.picker.autoPushToPhotoCollection = NO;
+    weakSelf.picker.pickingVideoOnly = YES;
     //    选择视频后回调
     [weakSelf.picker setDidFinishPickingVideoBlock:^(UIImage * _Nullable image, XMNAssetModel * _Nullable asset) {
         
