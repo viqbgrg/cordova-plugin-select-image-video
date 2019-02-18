@@ -103,8 +103,8 @@ public class SelectImageVideo extends CordovaPlugin {
       .compressMaxKB(512)//压缩最大值kb compressGrade()为Luban.CUSTOM_GEAR有效 int
       .compressWH(1,1) // 压缩宽高比 compressGrade()为Luban.CUSTOM_GEAR有效 int
       .videoQuality(1)// 视频录制质量 0 or 1 int
-      .videoSecond(10)//显示多少秒以内的视频 int
-      .recordVideoSecond(10);//录制视频秒数 默认60s int
+      .videoSecond(11)//显示多少秒以内的视频 int
+      .recordVideoSecond(11);//录制视频秒数 默认60s int
 //        .forResult(PictureConfig.CHOOSE_REQUEST);//结果回调onActivityResult code
     Intent intent = new Intent(this.cordova.getActivity(), PictureSelectorActivity.class);
     this.cordova.startActivityForResult(this, intent, PictureConfig.CHOOSE_REQUEST);
