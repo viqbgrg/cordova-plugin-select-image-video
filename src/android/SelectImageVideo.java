@@ -49,9 +49,8 @@ public class SelectImageVideo extends CordovaPlugin {
   public static final int PERMISSION_DENIED_ERROR = 20;
 
   private final static String TAG = "cordovatest";
-  private List<LocalMedia> selectList = new ArrayList<LocalMedia>();
+  private List<LocalMedia> selectList = new ArrayList<>();
   private CallbackContext callbackContext;
-  private PictureSelectionModel pictureSelectionModel;
   private int openGallery;
   private int selectionMode;
   private int maxSelectNum = 1;
@@ -63,60 +62,65 @@ public class SelectImageVideo extends CordovaPlugin {
   }
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+    this.callbackContext = callbackContext;
     this.num = args.getInt(0);
     this.reAction = action;
-    if(cordova.hasPermission(WRITE)){
-      return select();
-    }else {
-      getReadPermission();
+    if (reAction.equals("selectAll") || reAction.equals("selectImage") || reAction.equals("selectVideo") || reAction.equals("selectAllSingle") ||
+            reAction.equals("selectImageSingle") || reAction.equals("selectVideoSingle")){
+      if(cordova.hasPermission(WRITE)){
+        select();
+      }else {
+        getReadPermission();
+      }
+      return true;
     }
+
 
     return false;
   }
 
-  public boolean select() throws JSONException{
+  public void select(){
     if (reAction.equals("selectAll")) {
       //图片或者视频,多选
       this.maxSelectNum = num;
       this.openGallery = PictureMimeType.ofAll();
       this.selectionMode = PictureConfig.MULTIPLE;
-      return coolMethod();
+      coolMethod();
     }else if (reAction.equals("selectImage")){
       //仅图片,多选
       this.maxSelectNum = num;
       this.openGallery = PictureMimeType.ofImage();
       this.selectionMode = PictureConfig.MULTIPLE;
-      return coolMethod();
+      coolMethod();
     }else if (reAction.equals("selectVideo")){
       //仅视频,多选
       this.maxSelectNum = num;
       this.openGallery = PictureMimeType.ofVideo();
       this.selectionMode = PictureConfig.MULTIPLE;
-      return coolMethod();
+      coolMethod();
     }else if (reAction.equals("selectAllSingle")){
       //图片或者视频,单选
       this.openGallery = PictureMimeType.ofAll();
       this.selectionMode = PictureConfig.SINGLE;
-      return coolMethod();
+      coolMethod();
     }else if (reAction.equals("selectImageSingle")){
       //仅图片,单选
       this.openGallery = PictureMimeType.ofImage();
       this.selectionMode = PictureConfig.SINGLE;
-      return coolMethod();
+      coolMethod();
     }else if (reAction.equals("selectVideoSingle")){
       //仅视频,单选
       this.openGallery = PictureMimeType.ofVideo();
       this.selectionMode = PictureConfig.SINGLE;
-      return coolMethod();
+      coolMethod();
     }
-    return false;
   }
 
-  private boolean coolMethod() {
+  private void coolMethod() {
     //清除缓存
     // PictureFileUtils.deleteCacheDirFile(this.cordova.getActivity());
     // 进入相册 以下是例子：不需要的api可以不写
-    this.pictureSelectionModel = PictureSelector.create(this.cordova.getActivity())
+    PictureSelector.create(this.cordova.getActivity())
       .openGallery(openGallery)// 全部.PictureMimeType.ofAll()、图片.ofImage()、视频.ofVideo()
       .maxSelectNum(maxSelectNum)// 最大图片选择数量 int
       .minSelectNum(1)// 最小选择数量 int
@@ -140,7 +144,6 @@ public class SelectImageVideo extends CordovaPlugin {
 //        .forResult(PictureConfig.CHOOSE_REQUEST);//结果回调onActivityResult code
     Intent intent = new Intent(this.cordova.getActivity(), PictureSelectorActivity.class);
     this.cordova.startActivityForResult(this, intent, PictureConfig.CHOOSE_REQUEST);
-    return true;
   }
 
   @Override
