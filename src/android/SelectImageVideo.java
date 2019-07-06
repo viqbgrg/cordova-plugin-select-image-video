@@ -1,8 +1,11 @@
 package com.dias.plugin;
 
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.widget.Toast;
 
 import com.luck.picture.lib.PictureSelectionModel;
 import com.luck.picture.lib.PictureSelector;
@@ -11,18 +14,26 @@ import com.luck.picture.lib.compress.Luban;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
 import com.luck.picture.lib.entity.LocalMedia;
+import com.luck.picture.lib.permissions.RxPermissions;
 import com.luck.picture.lib.tools.DebugUtil;
 import com.luck.picture.lib.tools.PictureFileUtils;
 
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.ionic.starter.R;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -31,6 +42,11 @@ import static android.app.Activity.RESULT_OK;
  */
 public class SelectImageVideo extends CordovaPlugin {
 
+  public static final String WRITE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
+  String [] permissions = { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO };
+  public static final int REQUESTCODE = 0;
+  public static final int PERMISSION_DENIED_ERROR = 20;
 
   private final static String TAG = "cordovatest";
   private List<LocalMedia> selectList = new ArrayList<LocalMedia>();
@@ -39,39 +55,55 @@ public class SelectImageVideo extends CordovaPlugin {
   private int openGallery;
   private int selectionMode;
   private int maxSelectNum = 1;
-
+  public int num;
+  public String reAction;
+  protected void getReadPermission()
+  {
+    cordova.requestPermissions(this, REQUESTCODE, permissions);
+  }
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-    this.callbackContext = callbackContext;
-    if (action.equals("selectAll")) {
+    this.num = args.getInt(0);
+    this.reAction = action;
+    if(cordova.hasPermission(WRITE)){
+      return select();
+    }else {
+      getReadPermission();
+    }
+
+    return false;
+  }
+
+  public boolean select() throws JSONException{
+    if (reAction.equals("selectAll")) {
       //图片或者视频,多选
-      this.maxSelectNum = args.getInt(0);
+      this.maxSelectNum = num;
       this.openGallery = PictureMimeType.ofAll();
       this.selectionMode = PictureConfig.MULTIPLE;
       return coolMethod();
-    }else if (action.equals("selectImage")){
+    }else if (reAction.equals("selectImage")){
       //仅图片,多选
-      this.maxSelectNum = args.getInt(0);
+      this.maxSelectNum = num;
       this.openGallery = PictureMimeType.ofImage();
       this.selectionMode = PictureConfig.MULTIPLE;
       return coolMethod();
-    }else if (action.equals("selectVideo")){
+    }else if (reAction.equals("selectVideo")){
       //仅视频,多选
-      this.maxSelectNum = args.getInt(0);
+      this.maxSelectNum = num;
       this.openGallery = PictureMimeType.ofVideo();
       this.selectionMode = PictureConfig.MULTIPLE;
       return coolMethod();
-    }else if (action.equals("selectAllSingle")){
+    }else if (reAction.equals("selectAllSingle")){
       //图片或者视频,单选
       this.openGallery = PictureMimeType.ofAll();
       this.selectionMode = PictureConfig.SINGLE;
       return coolMethod();
-    }else if (action.equals("selectImageSingle")){
+    }else if (reAction.equals("selectImageSingle")){
       //仅图片,单选
       this.openGallery = PictureMimeType.ofImage();
       this.selectionMode = PictureConfig.SINGLE;
       return coolMethod();
-    }else if (action.equals("selectVideoSingle")){
+    }else if (reAction.equals("selectVideoSingle")){
       //仅视频,单选
       this.openGallery = PictureMimeType.ofVideo();
       this.selectionMode = PictureConfig.SINGLE;
@@ -124,7 +156,6 @@ public class SelectImageVideo extends CordovaPlugin {
           String type = selectList.get(0).getPictureType();
           String pictureType = "";
           int size = type.indexOf("/");
-          String wqdjj = type.substring(0,size);
           if (type.substring(0,size).equals("image")){
             pictureType = "picture";
             for (LocalMedia path:selectList) {
@@ -155,6 +186,19 @@ public class SelectImageVideo extends CordovaPlugin {
           this.callbackContext.success(jsonObject);
           break;
       }
+    }
+  }
+
+  public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                        int[] grantResults) throws JSONException {
+    for (int r : grantResults) {
+      if (r == PackageManager.PERMISSION_DENIED) {
+        this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
+        return;
+      }
+    }
+    if (requestCode == REQUESTCODE){
+      select();
     }
   }
 
