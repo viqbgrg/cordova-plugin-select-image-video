@@ -31,7 +31,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.ionic.starter.R;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
@@ -49,7 +48,7 @@ public class SelectImageVideo extends CordovaPlugin {
   public static final int PERMISSION_DENIED_ERROR = 20;
 
   private final static String TAG = "cordovatest";
-  private List<LocalMedia> selectList = new ArrayList<>();
+  private List<LocalMedia> selectList = new ArrayList<LocalMedia>();
   private CallbackContext callbackContext;
   private int openGallery;
   private int selectionMode;
